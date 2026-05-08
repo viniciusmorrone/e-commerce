@@ -100,15 +100,6 @@ loja_jeh/
 └── docker-compose.yml
 ```
 
-## 🎯 Roadmap
-
-- [x] Fase 1: Backend & API
-- [x] Fase 2: Banco de Dados & Infra
-- [ ] Fase 3: Endpoints REST
-- [ ] Fase 4: Integração WhatsApp
-- [ ] Fase 5: Frontend Next.js
-- [ ] Fase 6: Deploy
-
 ## 📄 Licença
 
 Projeto privado - JehFashion © 2026
