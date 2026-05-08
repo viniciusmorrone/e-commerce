@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: jehfashion-api
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: 7
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: WHATSAPP_NUMBER
+        value: 5511934855599
+      - key: ADMIN_EMAIL
+        value: jeh@gmail.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://jehfashion.com,https://www.jehfashion.com
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+databases:
+  - name: jehfashion-db
+    databaseName: jehfashion
+    user: jehfashion
+    plan: free
+    region: oregon
+
+  - name: jehfashion-redis
+    plan: free
+    region: oregon
