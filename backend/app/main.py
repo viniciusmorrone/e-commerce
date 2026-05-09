@@ -1,3 +1,4 @@
+from app.api.routes import auth, categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -32,6 +33,7 @@ app.include_router(admin_produtos.router, prefix=f"{settings.API_V1_STR}/admin/p
 app.include_router(imagens.router, prefix=f"{settings.API_V1_STR}/admin/produtos", tags=["imagens"])
 app.include_router(estoque.router, prefix=f"{settings.API_V1_STR}/admin/estoque", tags=["estoque"])
 app.include_router(whatsapp.router, prefix=f"{settings.API_V1_STR}/produtos", tags=["whatsapp"])
+app.include_router(setup.router, prefix=f"{settings.API_V1_STR}/setup", tags=["setup"])
 
 
 @app.get("/")
