@@ -17,11 +17,6 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Categorias</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/produtos?categoria=feminino" className="text-muted-foreground hover:text-foreground">
-                  Feminino
-                </Link>
-              </li>
-              <li>
                 <Link href="/produtos?categoria=masculino" className="text-muted-foreground hover:text-foreground">
                   Masculino
                 </Link>
@@ -29,11 +24,6 @@ export function Footer() {
               <li>
                 <Link href="/produtos?categoria=acessorios" className="text-muted-foreground hover:text-foreground">
                   Acessórios
-                </Link>
-              </li>
-              <li>
-                <Link href="/produtos?categoria=calcados" className="text-muted-foreground hover:text-foreground">
-                  Calçados
                 </Link>
               </li>
             </ul>
