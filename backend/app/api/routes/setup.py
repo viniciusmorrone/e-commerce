@@ -4,7 +4,7 @@ from app.db.database import SessionLocal, engine, Base
 from app.models.admin import Admin
 from app.models.categoria import Categoria
 from app.models.produto import Produto, Variante, Imagem
-from app.core.security import hash_password
+from app.core.security import get_password_hash
 from app.core.config import settings
 from slugify import slugify
 
@@ -72,7 +72,7 @@ def create_admin():
         
         admin = Admin(
             email=settings.ADMIN_EMAIL,
-            hashed_password=hash_password(settings.ADMIN_PASSWORD),
+            hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
             nome="Administrador",
             ativo=True
         )
