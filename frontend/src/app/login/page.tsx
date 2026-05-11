@@ -129,6 +129,9 @@ export default function LoginPage() {
         <p className="text-white/15 text-[10px] text-center mt-8 uppercase tracking-widest" style={{ fontFamily: MONTSERRAT }}>
           Acesso restrito
         </p>
+        <p className="text-white/10 text-[9px] text-center mt-2 font-mono break-all">
+          {process.env.NEXT_PUBLIC_API_URL ?? "⚠️ API_URL não definida (localhost)"}
+        </p>
       </div>
     </div>
   )
