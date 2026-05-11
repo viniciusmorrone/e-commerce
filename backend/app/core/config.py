@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "jeh@gmail.com"
     ADMIN_PASSWORD: str = "change-this-password"
     
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "https://loja-jeh.vercel.app",
+        "https://loja-2n31p101u-vinicius-morrones.projects.vercel.app",
+    ]
     
     class Config:
         env_file = ".env"

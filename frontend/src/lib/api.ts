@@ -107,7 +107,7 @@ export interface TokenResponse {
 
 export const authApi = {
   login: async (payload: AdminLoginPayload): Promise<TokenResponse> => {
-    const response = await api.post<TokenResponse>('/auth/login', payload);
+    const response = await api.post<TokenResponse>('/admin/auth/login', payload);
     return response.data;
   },
 };
