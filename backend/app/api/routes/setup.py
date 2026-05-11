@@ -86,6 +86,26 @@ def create_admin():
     finally:
         db.close()
 
+@router.post("/reset-admin-password")
+def reset_admin_password():
+    """Redefine a senha do admin para o valor atual do .env (ADMIN_PASSWORD)"""
+    db = SessionLocal()
+    try:
+        admin = db.query(Admin).filter(Admin.email == settings.ADMIN_EMAIL).first()
+        if not admin:
+            raise HTTPException(status_code=404, detail="Admin não encontrado. Crie o admin primeiro via /create-admin")
+        admin.hashed_password = get_password_hash(settings.ADMIN_PASSWORD)
+        db.commit()
+        return {"message": f"Senha do admin '{settings.ADMIN_EMAIL}' atualizada com sucesso!"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+
 @router.post("/setup-all")
 def setup_all():
     """Executar todos os setups de uma vez"""
