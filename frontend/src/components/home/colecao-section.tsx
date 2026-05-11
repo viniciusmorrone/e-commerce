@@ -3,41 +3,63 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { produtosApi, type ProdutoListItem } from "@/lib/api"
+import { produtosApi, categoriasApi, type ProdutoListItem } from "@/lib/api"
 
 const MONTSERRAT = "'Montserrat', sans-serif"
 
-export function FeaturedProducts() {
+interface ColecaoSectionProps {
+  titulo: string
+  categoriaSlug: string
+  verMaisHref: string
+}
+
+export function ColecaoSection({ titulo, categoriaSlug, verMaisHref }: ColecaoSectionProps) {
   const [produtos, setProdutos] = useState<ProdutoListItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetch = async () => {
+    const loadProdutos = async () => {
       try {
-        const data = await produtosApi.listar({ limite: 15, ordenar: "criado_em", ordem: "desc" })
-        setProdutos(data)
+        const categorias = await categoriasApi.listar()
+        let categoriaId: string | undefined
+
+        for (const cat of categorias) {
+          if (cat.slug === categoriaSlug) { categoriaId = cat.id; break }
+          const sub = cat.subcategorias?.find((s) => s.slug === categoriaSlug)
+          if (sub) { categoriaId = sub.id; break }
+        }
+
+        if (categoriaId) {
+          const data = await produtosApi.listar({
+            categoria_id: categoriaId,
+            limite: 8,
+            ordenar: "criado_em",
+            ordem: "desc",
+          })
+          setProdutos(data)
+        }
       } catch (_e) {
         /* silently ignore */
       } finally {
         setLoading(false)
       }
     }
-    fetch()
-  }, [])
+    loadProdutos()
+  }, [categoriaSlug])
 
   return (
-    <section className="py-16 bg-black border-t border-white/5">
+    <section className="py-14 bg-black border-t border-white/5">
       <div className="container">
         <p
           className="text-center text-xs font-bold tracking-[0.35em] text-white/40 mb-10 uppercase"
           style={{ fontFamily: MONTSERRAT }}
         >
-          ÚLTIMAS PEÇAS!
+          {titulo}
         </p>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-8">
-            {[...Array(10)].map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+            {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-square bg-neutral-900 rounded-xl mb-3" />
                 <div className="h-2.5 bg-neutral-900 rounded mb-2 w-3/4" />
@@ -46,9 +68,9 @@ export function FeaturedProducts() {
             ))}
           </div>
         ) : produtos.length === 0 ? (
-          <p className="text-center text-white/20 py-16 text-sm">Em breve, novas peças aqui!</p>
+          <p className="text-center text-white/20 py-10 text-sm">Em breve...</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
             {produtos.map((produto) => (
               <Link key={produto.id} href={`/produtos/${produto.slug}`} className="group">
                 <div className="aspect-square relative overflow-hidden rounded-xl bg-neutral-900 mb-3">
@@ -79,9 +101,9 @@ export function FeaturedProducts() {
           </div>
         )}
 
-        <div className="flex justify-center mt-12">
+        <div className="flex justify-center mt-10">
           <Link
-            href="/ultimas-pecas"
+            href={verMaisHref}
             className="inline-flex items-center justify-center px-10 py-3 bg-blue-600 text-white text-xs font-bold uppercase tracking-[0.2em] rounded-full hover:bg-blue-700 transition-colors"
             style={{ fontFamily: MONTSERRAT }}
           >

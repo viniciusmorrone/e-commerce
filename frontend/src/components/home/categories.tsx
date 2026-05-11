@@ -1,47 +1,99 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
 
-const categories = [
+const MONTSERRAT = "'Montserrat', sans-serif"
+
+const colecoes = [
   {
-    name: "Masculino",
-    slug: "masculino",
-    image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=800&h=600&fit=crop",
-    description: "Roupas e looks masculinos exclusivos",
+    name: "CAMISETAS",
+    slug: "camisetas",
+    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=560&fit=crop",
   },
   {
-    name: "Acessórios",
+    name: "CALÇAS",
+    slug: "calcas",
+    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=560&fit=crop",
+  },
+  {
+    name: "CHINELOS",
+    slug: "chinelos",
+    image: "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400&h=560&fit=crop",
+  },
+  {
+    name: "BONÉS",
+    slug: "bones",
+    image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&h=560&fit=crop",
+  },
+  {
+    name: "ACESSÓRIOS",
     slug: "acessorios",
-    image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?w=800&h=600&fit=crop",
-    description: "Relógios, óculos e muito mais",
+    image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400&h=560&fit=crop",
   },
 ]
 
 export function Categories() {
   return (
-    <section className="py-16 bg-neutral-50">
+    <section className="py-16 bg-black">
       <div className="container">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-          Explore por Categoria
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {categories.map((category) => (
+        <p
+          className="text-center text-xs font-bold tracking-[0.35em] text-white/40 mb-10 uppercase"
+          style={{ fontFamily: MONTSERRAT }}
+        >
+          COLEÇÕES
+        </p>
+
+        <div className="flex gap-3 justify-center flex-wrap md:flex-nowrap">
+          {colecoes.map((col) => (
             <Link
-              key={category.slug}
-              href={`/produtos?categoria=${category.slug}`}
-              className="group relative overflow-hidden rounded-lg aspect-[3/4] bg-neutral-200"
+              key={col.slug}
+              href={`/produtos?categoria=${col.slug}`}
+              className="group relative overflow-hidden rounded-2xl flex-shrink-0 w-[178px] h-[240px] bg-neutral-900 cursor-pointer"
+              style={{ transition: "transform 0.3s cubic-bezier(.22,.68,0,1.2), box-shadow 0.3s ease" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = "translateY(-10px)"
+                ;(e.currentTarget as HTMLElement).style.boxShadow = "0 24px 60px rgba(255,255,255,0.07)"
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = "translateY(0)"
+                ;(e.currentTarget as HTMLElement).style.boxShadow = "none"
+              }}
             >
+              {/* Product image */}
               <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110"
-                style={{ backgroundImage: `url(${category.image})` }}
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                style={{ backgroundImage: `url(${col.image})` }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-1">{category.name}</h3>
-                <p className="text-sm text-neutral-300 mb-2">{category.description}</p>
-                <div className="flex items-center gap-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ver produtos
-                  <ArrowRight size={16} />
-                </div>
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/52 group-hover:bg-black/38 transition-colors duration-300" />
+
+              {/* Big watermark text stacked - style Boneti */}
+              <div className="absolute inset-0 flex flex-col justify-center overflow-hidden pointer-events-none select-none">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="block text-white font-black leading-none w-full text-left px-1"
+                    style={{
+                      fontFamily: MONTSERRAT,
+                      fontSize: "2.4rem",
+                      opacity: 0.16,
+                      letterSpacing: "-0.03em",
+                    }}
+                  >
+                    {col.name}
+                  </span>
+                ))}
+              </div>
+
+              {/* Bottom label */}
+              <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+                <span
+                  className="block text-white font-black text-sm tracking-widest uppercase"
+                  style={{ fontFamily: MONTSERRAT }}
+                >
+                  {col.name}
+                </span>
+                <span className="block text-white/40 text-[10px] mt-0.5 group-hover:text-white/60 transition-colors">
+                  Ver coleção →
+                </span>
               </div>
             </Link>
           ))}

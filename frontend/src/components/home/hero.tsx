@@ -1,33 +1,32 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, MessageCircle } from "lucide-react"
+import { MessageCircle } from "lucide-react"
+
+const MONTSERRAT = "'Montserrat', sans-serif"
 
 export function Hero() {
   return (
-    <section className="relative h-[600px] flex items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-800 text-white">
-      <div className="container text-center space-y-6">
-        <span className="inline-block text-xs font-semibold tracking-widest uppercase text-neutral-400 border border-neutral-600 px-3 py-1 rounded-full">
-          Nova Coleção
-        </span>
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+    <section className="relative min-h-[580px] flex items-center justify-center bg-black text-white">
+      <div className="container text-center space-y-6 px-4">
+        <h1
+          className="text-5xl md:text-7xl font-black tracking-tight uppercase"
+          style={{ fontFamily: MONTSERRAT }}
+        >
           Estilo que Inspira
         </h1>
-        <p className="text-xl md:text-2xl text-neutral-300 max-w-2xl mx-auto">
-          Peças exclusivas, moda masculina de grife e muito estilo. Compre direto pelo WhatsApp, rápido e sem complicação.
+        <p className="text-lg md:text-xl text-neutral-400 max-w-xl mx-auto leading-relaxed">
+          Peças exclusivas, moda masculina de grife e muito estilo.
+          Compre direto pelo WhatsApp, rápido e sem complicação.
         </p>
-        <div className="flex gap-4 justify-center pt-4 flex-wrap">
-          <Button asChild size="lg" className="bg-white text-black hover:bg-neutral-200">
-            <Link href="/produtos">
-              Explorar Coleção
-              <ArrowRight className="ml-2" size={20} />
-            </Link>
-          </Button>
-          <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] border-0">
-            <a href="https://wa.me/5511934855599" target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="mr-2" size={20} />
-              Falar no WhatsApp
-            </a>
-          </Button>
+        <div className="flex justify-center pt-4">
+          <a
+            href="https://wa.me/5511934855599"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold px-10 py-3.5 rounded-full text-base hover:bg-[#1ebe5d] transition-colors shadow-lg shadow-[#25D366]/20"
+            style={{ fontFamily: MONTSERRAT }}
+          >
+            <MessageCircle size={20} />
+            Falar no WhatsApp
+          </a>
         </div>
       </div>
     </section>
