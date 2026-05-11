@@ -34,7 +34,7 @@ export default function LoginPage() {
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (!err.response) {
-          setError("Não foi possível conectar ao servidor. Verifique NEXT_PUBLIC_API_URL.")
+          setError("Não foi possível conectar ao servidor. Tente novamente em instantes.")
         } else if (err.response.status === 401 || err.response.status === 403) {
           setError("Email ou senha incorretos.")
         } else {
