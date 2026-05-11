@@ -46,16 +46,7 @@ export function Categories() {
             <Link
               key={col.slug}
               href={`/produtos?categoria=${col.slug}`}
-              className="group relative overflow-hidden rounded-2xl flex-shrink-0 w-[178px] h-[240px] bg-neutral-900 cursor-pointer"
-              style={{ transition: "transform 0.3s cubic-bezier(.22,.68,0,1.2), box-shadow 0.3s ease" }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-10px)"
-                ;(e.currentTarget as HTMLElement).style.boxShadow = "0 24px 60px rgba(255,255,255,0.07)"
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)"
-                ;(e.currentTarget as HTMLElement).style.boxShadow = "none"
-              }}
+              className="group relative overflow-hidden rounded-2xl flex-shrink-0 w-[178px] h-[240px] bg-neutral-900 cursor-pointer transition-all duration-300 ease-out hover:-translate-y-[10px] hover:shadow-[0_24px_60px_rgba(255,255,255,0.07)]"
             >
               {/* Product image */}
               <div

@@ -12,7 +12,7 @@ export function FeaturedProducts() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetch = async () => {
+    const loadData = async () => {
       try {
         const data = await produtosApi.listar({ limite: 15, ordenar: "criado_em", ordem: "desc" })
         setProdutos(data)
@@ -22,7 +22,7 @@ export function FeaturedProducts() {
         setLoading(false)
       }
     }
-    fetch()
+    loadData()
   }, [])
 
   return (

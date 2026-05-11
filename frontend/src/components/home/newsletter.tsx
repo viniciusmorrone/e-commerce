@@ -1,27 +1,31 @@
-import { Button } from "@/components/ui/button"
 import { MessageCircle } from "lucide-react"
+
+const MONTSERRAT = "'Montserrat', sans-serif"
 
 export function Newsletter() {
   return (
-    <section className="py-16 bg-neutral-900 text-white">
+    <section className="py-20 bg-black border-t border-white/5 text-white">
       <div className="container max-w-2xl text-center">
-        <MessageCircle className="mx-auto mb-6 text-[#25D366]" size={48} />
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <MessageCircle className="mx-auto mb-6 text-[#25D366]" size={44} />
+        <h2
+          className="text-2xl md:text-3xl font-black mb-4 uppercase tracking-widest"
+          style={{ fontFamily: MONTSERRAT }}
+        >
           Fique por Dentro
         </h2>
-        <p className="text-neutral-300 mb-8 text-lg">
+        <p className="text-neutral-400 mb-8 text-base max-w-md mx-auto leading-relaxed">
           Receba novidades, lançamentos e peças exclusivas com um atendimento rápido e personalizado.
         </p>
-        <Button
-          asChild
-          size="lg"
-          className="bg-[#25D366] text-white hover:bg-[#1ebe5d] border-0 px-8 py-4 text-base"
+        <a
+          href="https://wa.me/5511934855599"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-[#25D366] text-white font-bold px-10 py-3.5 rounded-full text-base hover:bg-[#1ebe5d] transition-colors shadow-lg shadow-[#25D366]/20"
+          style={{ fontFamily: MONTSERRAT }}
         >
-          <a href="https://wa.me/5511934855599" target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="mr-2" size={20} />
-            Falar no WhatsApp
-          </a>
-        </Button>
+          <MessageCircle size={20} />
+          Falar no WhatsApp
+        </a>
       </div>
     </section>
   )
