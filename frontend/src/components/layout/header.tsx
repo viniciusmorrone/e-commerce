@@ -138,7 +138,9 @@ export function Header() {
           className="absolute left-1/2 -translate-x-1/2 text-2xl font-black tracking-widest text-white uppercase whitespace-nowrap"
           style={{ fontFamily: MONTSERRAT }}
         >
-          JehFashion
+          <span style={{ color: "#002395" }}>JEH</span>
+          <span style={{ color: "#FFFFFF" }}>FASH</span>
+          <span style={{ color: "#ED2939" }}>ION</span>
         </Link>
 
         {/* Mobile hamburger */}
