@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, LogIn } from "lucide-react"
 import { authApi } from "@/lib/api"
+import axios from "axios"
 
 const MONTSERRAT = "'Montserrat', sans-serif"
 
@@ -30,8 +31,18 @@ export default function LoginPage() {
       localStorage.setItem("access_token", access_token)
       localStorage.setItem("refresh_token", refresh_token)
       router.push("/admin")
-    } catch (_e: unknown) {
-      setError("Email ou senha incorretos.")
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        if (!err.response) {
+          setError("Não foi possível conectar ao servidor. Verifique NEXT_PUBLIC_API_URL.")
+        } else if (err.response.status === 401 || err.response.status === 403) {
+          setError("Email ou senha incorretos.")
+        } else {
+          setError(`Erro ${err.response.status}: ${err.response.data?.detail ?? "tente novamente"}`)
+        }
+      } else {
+        setError("Erro inesperado. Tente novamente.")
+      }
     } finally {
       setLoading(false)
     }
