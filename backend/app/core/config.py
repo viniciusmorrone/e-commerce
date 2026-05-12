@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     WHATSAPP_NUMBER: str = "5511934855599"
     
     ADMIN_EMAIL: str = "jeh@gmail.com"
-    ADMIN_PASSWORD: str = "change-this-password"
+    ADMIN_PASSWORD: str = "vini"
     
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
