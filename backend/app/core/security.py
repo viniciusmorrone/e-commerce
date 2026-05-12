@@ -11,12 +11,16 @@ pwd_context = CryptContext(
 )
 
 
+def _truncate(password: str) -> str:
+    return password.strip().encode("utf-8")[:72].decode("utf-8", errors="ignore")
+
+
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password.strip()[:72])
+    return pwd_context.hash(_truncate(password))
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain.strip()[:72], hashed)
+    return pwd_context.verify(_truncate(plain), hashed)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
