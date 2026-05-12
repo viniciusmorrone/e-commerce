@@ -5,6 +5,7 @@ from app.db.database import get_db
 from app.db.redis_client import get_redis
 from app.schemas.produto import VarianteResponse, VarianteUpdate
 from app.models.produto import Variante
+from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter()
@@ -19,7 +20,8 @@ def atualizar_estoque(
     variante_id: uuid.UUID,
     estoque_data: EstoqueUpdate,
     db: Session = Depends(get_db),
-    redis = Depends(get_redis)
+    redis = Depends(get_redis),
+    admin=Depends(get_current_admin),
 ):
     variante = db.query(Variante).filter(Variante.id == variante_id).first()
     if not variante:
@@ -48,7 +50,8 @@ def atualizar_variante(
     variante_id: uuid.UUID,
     variante_data: VarianteUpdate,
     db: Session = Depends(get_db),
-    redis = Depends(get_redis)
+    redis = Depends(get_redis),
+    admin=Depends(get_current_admin),
 ):
     variante = db.query(Variante).filter(Variante.id == variante_id).first()
     if not variante:

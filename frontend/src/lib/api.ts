@@ -88,6 +88,24 @@ export const produtosApi = {
   },
 };
 
+export interface AdminLoginPayload {
+  email: string
+  password: string
+}
+
+export interface TokenResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+}
+
+export const authApi = {
+  login: async (payload: AdminLoginPayload): Promise<TokenResponse> => {
+    const response = await api.post<TokenResponse>('/admin/auth/login', payload)
+    return response.data
+  },
+}
+
 export const categoriasApi = {
   listar: async () => {
     const response = await api.get<Categoria[]>('/categorias');

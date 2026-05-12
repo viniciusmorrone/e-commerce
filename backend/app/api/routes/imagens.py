@@ -6,6 +6,7 @@ from app.db.redis_client import get_redis
 from app.schemas.produto import ImagemResponse
 from app.models.produto import Produto, Imagem
 from app.services.cloudinary_service import upload_image, delete_image
+from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter()
@@ -18,7 +19,8 @@ async def upload_imagem_produto(
     ordem: int = Form(0),
     principal: bool = Form(False),
     db: Session = Depends(get_db),
-    redis = Depends(get_redis)
+    redis = Depends(get_redis),
+    admin=Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:
@@ -70,7 +72,8 @@ def deletar_imagem_produto(
     produto_id: uuid.UUID,
     imagem_id: uuid.UUID,
     db: Session = Depends(get_db),
-    redis = Depends(get_redis)
+    redis = Depends(get_redis),
+    admin=Depends(get_current_admin),
 ):
     imagem = db.query(Imagem).filter(
         Imagem.id == imagem_id,
@@ -96,7 +99,8 @@ def definir_imagem_principal(
     produto_id: uuid.UUID,
     imagem_id: uuid.UUID,
     db: Session = Depends(get_db),
-    redis = Depends(get_redis)
+    redis = Depends(get_redis),
+    admin=Depends(get_current_admin),
 ):
     imagem = db.query(Imagem).filter(
         Imagem.id == imagem_id,
