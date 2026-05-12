@@ -128,5 +128,11 @@ def setup_all():
         results.append(admin_result)
     except Exception as e:
         results.append({"error": f"Create Admin: {str(e)}"})
-    
+
+    try:
+        reset_result = reset_admin_password()
+        results.append(reset_result)
+    except Exception as e:
+        results.append({"error": f"Reset Password: {str(e)}"})
+
     return {"results": results}
