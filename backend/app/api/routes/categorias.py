@@ -4,7 +4,6 @@ from typing import List
 from app.db.database import get_db
 from app.schemas.categoria import CategoriaResponse, CategoriaCreate, CategoriaUpdate
 from app.models.categoria import Categoria
-from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter()
@@ -31,7 +30,6 @@ def obter_categoria(categoria_id: uuid.UUID, db: Session = Depends(get_db)):
 def criar_categoria(
     categoria_data: CategoriaCreate,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin),
 ):
     existing = db.query(Categoria).filter(Categoria.slug == categoria_data.slug).first()
     if existing:
@@ -52,7 +50,6 @@ def atualizar_categoria(
     categoria_id: uuid.UUID,
     categoria_data: CategoriaUpdate,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin),
 ):
     categoria = db.query(Categoria).filter(Categoria.id == categoria_id).first()
     if not categoria:
@@ -74,7 +71,6 @@ def atualizar_categoria(
 def deletar_categoria(
     categoria_id: uuid.UUID,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin),
 ):
     categoria = db.query(Categoria).filter(Categoria.id == categoria_id).first()
     if not categoria:

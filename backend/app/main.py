@@ -4,7 +4,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
-from app.api.routes import auth, categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
+from app.api.routes import categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -25,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/admin/auth", tags=["auth"])
 app.include_router(setup.router, prefix=f"{settings.API_V1_STR}/setup", tags=["setup"])
 app.include_router(categorias.router, prefix=f"{settings.API_V1_STR}/categorias", tags=["categorias"])
 app.include_router(produtos.router, prefix=f"{settings.API_V1_STR}/produtos", tags=["produtos"])

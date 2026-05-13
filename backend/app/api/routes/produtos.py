@@ -11,7 +11,6 @@ from app.schemas.produto import (
     ProdutoListResponse
 )
 from app.models.produto import Produto, Variante, Imagem
-from app.api.deps import get_current_admin
 import uuid
 import json
 
@@ -102,7 +101,6 @@ def criar_produto(
     produto_data: ProdutoCreate,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
-    admin=Depends(get_current_admin),
 ):
     existing = db.query(Produto).filter(Produto.slug == produto_data.slug).first()
     if existing:
@@ -136,7 +134,6 @@ def atualizar_produto(
     produto_data: ProdutoUpdate,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
-    admin=Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:
@@ -162,7 +159,6 @@ def deletar_produto(
     produto_id: uuid.UUID,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
-    admin=Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:

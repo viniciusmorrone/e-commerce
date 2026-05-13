@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
@@ -17,59 +16,33 @@ interface Produto {
 }
 
 export default function AdminPage() {
-  const router = useRouter()
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    if (!token) { router.push('/login'); return }
-
     axios
-      .get<Produto[]>(`${API_URL}/produtos`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get<Produto[]>(`${API_URL}/produtos`)
       .then(r => setProdutos(r.data))
-      .catch(e => {
-        if (axios.isAxiosError(e) && e.response?.status === 401) {
-          localStorage.clear()
-          router.push('/login')
-        } else {
-          setErro('Erro ao carregar produtos.')
-        }
-      })
+      .catch(() => setErro('Erro ao carregar produtos.'))
       .finally(() => setLoading(false))
-  }, [router])
-
-  function logout() {
-    localStorage.clear()
-    router.push('/login')
-  }
+  }, [])
 
   return (
     <div style={{ fontFamily: FONT, minHeight: '100vh', background: '#0a0a0a', color: '#fff' }}>
-      <header className="flex items-center justify-between px-8 py-5 border-b border-white/10">
+      <header className="flex items-center px-8 py-5 border-b border-white/10">
         <span className="text-lg font-bold tracking-widest">
           <span style={{ color: '#003087' }}>JEH</span>
           <span style={{ color: '#ffffff' }}>FASH</span>
           <span style={{ color: '#C8102E' }}>ION</span>
           <span className="text-white/40 text-xs font-normal ml-3 uppercase tracking-[0.2em]">Admin</span>
         </span>
-        <button
-          onClick={logout}
-          className="text-white/40 hover:text-white text-xs uppercase tracking-widest transition-colors"
-        >
-          Sair
-        </button>
       </header>
 
       <main className="max-w-5xl mx-auto px-8 py-10">
         <h2 className="text-xl font-semibold tracking-wider mb-8 text-white/80">Produtos</h2>
 
-        {loading && (
-          <p className="text-white/40 text-sm">Carregando…</p>
-        )}
+        {loading && <p className="text-white/40 text-sm">Carregando…</p>}
 
         {erro && (
           <p className="text-red-400 text-sm bg-red-400/10 px-4 py-3 rounded border border-red-400/20">{erro}</p>
