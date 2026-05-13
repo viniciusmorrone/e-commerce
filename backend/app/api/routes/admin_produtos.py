@@ -4,6 +4,7 @@ from app.db.database import get_db
 from app.db.redis_client import get_redis
 from app.schemas.produto import VarianteCreate, VarianteResponse
 from app.models.produto import Produto, Variante
+from app.api.deps import get_current_admin
 import uuid
 
 router = APIRouter()
@@ -15,6 +16,7 @@ def adicionar_variante(
     variante_data: VarianteCreate,
     db: Session = Depends(get_db),
     redis=Depends(get_redis),
+    _: object = Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:

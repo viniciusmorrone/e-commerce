@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from typing import List, Optional
 from app.db.database import get_db
 from app.db.redis_client import get_redis
+from app.api.deps import get_current_admin
 from app.schemas.produto import (
     ProdutoResponse, 
     ProdutoCreate, 
@@ -101,6 +102,7 @@ def criar_produto(
     produto_data: ProdutoCreate,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
+    _: object = Depends(get_current_admin),
 ):
     existing = db.query(Produto).filter(Produto.slug == produto_data.slug).first()
     if existing:
@@ -134,6 +136,7 @@ def atualizar_produto(
     produto_data: ProdutoUpdate,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
+    _: object = Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:
@@ -159,6 +162,7 @@ def deletar_produto(
     produto_id: uuid.UUID,
     db: Session = Depends(get_db),
     redis = Depends(get_redis),
+    _: object = Depends(get_current_admin),
 ):
     produto = db.query(Produto).filter(Produto.id == produto_id).first()
     if not produto:
