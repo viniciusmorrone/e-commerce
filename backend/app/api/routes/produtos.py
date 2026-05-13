@@ -17,7 +17,7 @@ import json
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ProdutoListResponse])
+@router.get("", response_model=List[ProdutoListResponse])
 def listar_produtos(
     categoria_id: Optional[uuid.UUID] = None,
     cor: Optional[str] = None,
@@ -96,7 +96,7 @@ def obter_produto(slug: str, db: Session = Depends(get_db)):
     return produto
 
 
-@router.post("/", response_model=ProdutoResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ProdutoResponse, status_code=status.HTTP_201_CREATED)
 def criar_produto(
     produto_data: ProdutoCreate,
     db: Session = Depends(get_db),

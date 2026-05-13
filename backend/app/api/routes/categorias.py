@@ -9,7 +9,7 @@ import uuid
 router = APIRouter()
 
 
-@router.get("/", response_model=List[CategoriaResponse])
+@router.get("", response_model=List[CategoriaResponse])
 def listar_categorias(db: Session = Depends(get_db)):
     categorias = db.query(Categoria).filter(Categoria.pai_id == None).all()
     return categorias
@@ -26,7 +26,7 @@ def obter_categoria(categoria_id: uuid.UUID, db: Session = Depends(get_db)):
     return categoria
 
 
-@router.post("/", response_model=CategoriaResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CategoriaResponse, status_code=status.HTTP_201_CREATED)
 def criar_categoria(
     categoria_data: CategoriaCreate,
     db: Session = Depends(get_db),
