@@ -8,7 +8,7 @@ from app.db.database import engine, Base
 from app.api.routes import auth, categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
 
 limiter = Limiter(key_func=get_remote_address)
-
+#yay
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
