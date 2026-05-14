@@ -30,6 +30,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "https://loja-jeh.vercel.app",
         "https://loja-2n31p101u-vinicius-morrones.projects.vercel.app",
+        "https://loja-cfd03mmos-vinicius-morrones-projects.vercel.app",
     ]
 
     @field_validator("CORS_ORIGINS", mode="before")

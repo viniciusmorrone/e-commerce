@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.database import engine, Base
@@ -20,9 +20,31 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
+
+
+@app.middleware("http")
+async def options_middleware(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+        origin = request.headers.get("origin", "")
+        
+        if origin in settings.CORS_ORIGINS or any(origin.endswith(".vercel.app") for origin in settings.CORS_ORIGINS):
+            response.headers["Access-Control-Allow-Origin"] = origin
+        else:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Max-Age"] = "3600"
+        return response
+    
+    return await call_next(request)
 
 
 @app.on_event("startup")
@@ -53,6 +75,6 @@ def health_check():
     return {"status": "healthy"}
 
 
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    return {"message": "OK"}
+@app.get("/cors-test")
+def cors_test():
+    return {"cors": "working", "origins": settings.CORS_ORIGINS}
