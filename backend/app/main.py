@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.db.database import engine, Base
 from app.api.routes import auth, categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
@@ -16,6 +17,82 @@ app = FastAPI(
 
 logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 
+
+class CustomCORSMiddleware:
+    def __init__(self, app):
+        self.app = app
+        self.allow_origins = settings.CORS_ORIGINS
+        self.allow_credentials = True
+        self.allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+        self.allow_headers = ["*"]
+        self.max_age = 3600
+    
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        request = Request(scope, receive)
+        origin = request.headers.get("origin", "")
+        
+        # Verificar se a origem é permitida
+        is_allowed = origin in self.allow_origins
+        
+        # Se não está na lista exata, verificar se é um domínio vercel.app
+        if not is_allowed and origin:
+            is_allowed = origin.endswith(".vercel.app") or any(
+                allowed in origin for allowed in self.allow_origins if "vercel" in allowed
+            )
+        
+        if request.method == "OPTIONS":
+            # Responder preflight diretamente
+            headers = {
+                b"access-control-allow-origin": origin.encode() if is_allowed else b"*",
+                b"access-control-allow-methods": b"GET, POST, PUT, DELETE, OPTIONS, PATCH",
+                b"access-control-allow-headers": b"*",
+                b"access-control-allow-credentials": b"true",
+                b"access-control-max-age": b"3600",
+                b"content-type": b"application/json",
+            }
+            
+            await send({
+                "type": "http.response.start",
+                "status": 200,
+                "headers": list(headers.items()),
+            })
+            await send({
+                "type": "http.response.body",
+                "body": b'{"message": "OK"}',
+            })
+            return
+        
+        # Para requisições normais, adicionar headers CORS na resposta
+        async def custom_send(message):
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                
+                # Adicionar headers CORS
+                if is_allowed:
+                    headers.append((b"access-control-allow-origin", origin.encode()))
+                else:
+                    headers.append((b"access-control-allow-origin", b"*"))
+                
+                headers.append((b"access-control-allow-credentials", b"true"))
+                headers.append((b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"))
+                headers.append((b"access-control-allow-headers", b"*"))
+                headers.append((b"access-control-max-age", b"3600"))
+                
+                message["headers"] = headers
+            
+            await send(message)
+        
+        await self.app(scope, receive, custom_send)
+
+
+# Adicionar middleware customizado ANTES do CORSMiddleware nativo
+app.add_middleware(CustomCORSMiddleware)
+
+# Manter CORSMiddleware nativo como backup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -25,26 +102,6 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=3600,
 )
-
-
-@app.middleware("http")
-async def options_middleware(request: Request, call_next):
-    if request.method == "OPTIONS":
-        response = Response(status_code=200)
-        origin = request.headers.get("origin", "")
-        
-        if origin in settings.CORS_ORIGINS or any(origin.endswith(".vercel.app") for origin in settings.CORS_ORIGINS):
-            response.headers["Access-Control-Allow-Origin"] = origin
-        else:
-            response.headers["Access-Control-Allow-Origin"] = "*"
-        
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Max-Age"] = "3600"
-        return response
-    
-    return await call_next(request)
 
 
 @app.on_event("startup")
