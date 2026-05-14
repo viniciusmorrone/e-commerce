@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import List
+import json
 
 
 class Settings(BaseSettings):
@@ -29,6 +31,16 @@ class Settings(BaseSettings):
         "https://loja-jeh.vercel.app",
         "https://loja-2n31p101u-vinicius-morrones.projects.vercel.app",
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return [origin.strip() for origin in v.split(",")]
+        return v
     
     class Config:
         env_file = ".env"

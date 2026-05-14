@@ -1,28 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.db.database import engine, Base
 from app.api.routes import auth, categorias, produtos, imagens, estoque, whatsapp, admin_produtos, setup
+import logging
 
-limiter = Limiter(key_func=get_remote_address)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    redirect_slashes=False,
 )
 
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-
-@app.on_event("startup")
-def on_startup():
-    Base.metadata.create_all(bind=engine)
+logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +23,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/admin/auth", tags=["auth"])
 app.include_router(setup.router, prefix=f"{settings.API_V1_STR}/setup", tags=["setup"])
@@ -54,3 +51,8 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    return {"message": "OK"}

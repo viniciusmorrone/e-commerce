@@ -8,6 +8,11 @@ from app.core.security import verify_password, create_access_token, create_refre
 router = APIRouter()
 
 
+@router.options("/login")
+async def login_options():
+    return {"message": "OK"}
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(credentials: AdminLogin, db: Session = Depends(get_db)):
     admin = db.query(Admin).filter(Admin.email == credentials.email).first()
