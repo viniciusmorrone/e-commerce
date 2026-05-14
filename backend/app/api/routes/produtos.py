@@ -32,9 +32,12 @@ def listar_produtos(
 ):
     cache_key = f"produtos:{categoria_id}:{cor}:{tamanho}:{ordenar}:{ordem}:{limite}:{offset}"
     
-    cached = redis.get(cache_key)
-    if cached:
-        return json.loads(cached)
+    try:
+        cached = redis.get(cache_key)
+        if cached:
+            return json.loads(cached)
+    except Exception:
+        pass
     
     query = db.query(Produto).filter(Produto.ativo == True)
     
@@ -76,7 +79,10 @@ def listar_produtos(
             imagem_principal=imagem_principal.url if imagem_principal else None
         ))
     
-    redis.setex(cache_key, 300, json.dumps([r.model_dump(mode='json') for r in result], default=str))
+    try:
+        redis.setex(cache_key, 300, json.dumps([r.model_dump(mode='json') for r in result], default=str))
+    except Exception:
+        pass
     
     return result
 
@@ -125,7 +131,12 @@ def criar_produto(
     db.commit()
     db.refresh(produto)
     
-    redis.delete("produtos:*")
+    try:
+        keys = redis.keys("produtos:*")
+        if keys:
+            redis.delete(*keys)
+    except Exception:
+        pass
     
     return produto
 
@@ -152,7 +163,12 @@ def atualizar_produto(
     db.commit()
     db.refresh(produto)
     
-    redis.delete("produtos:*")
+    try:
+        keys = redis.keys("produtos:*")
+        if keys:
+            redis.delete(*keys)
+    except Exception:
+        pass
     
     return produto
 
@@ -174,6 +190,11 @@ def deletar_produto(
     produto.ativo = False
     db.commit()
     
-    redis.delete("produtos:*")
+    try:
+        keys = redis.keys("produtos:*")
+        if keys:
+            redis.delete(*keys)
+    except Exception:
+        pass
     
     return None
