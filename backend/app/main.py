@@ -16,35 +16,35 @@ app = FastAPI(
 
 logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,
-)
-
-
+# CORS middleware - validates origins explicitly
 @app.middleware("http")
-async def options_middleware(request: Request, call_next):
-    if request.method == "OPTIONS":
-        response = Response(status_code=200)
+async def cors_middleware(request: Request, call_next):
+    # Only handle CORS for OPTIONS preflight requests with Origin header
+    if request.method == "OPTIONS" and "origin" in request.headers:
         origin = request.headers.get("origin", "")
+        allowed = origin in settings.CORS_ORIGINS
         
-        if origin in settings.CORS_ORIGINS or any(origin.endswith(".vercel.app") for origin in settings.CORS_ORIGINS):
-            response.headers["Access-Control-Allow-Origin"] = origin
+        if allowed:
+            response = Response(
+                status_code=200,
+                content="",
+                headers={
+                    "Access-Control-Allow-Origin": origin,
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Max-Age": "3600",
+                }
+            )
         else:
-            response.headers["Access-Control-Allow-Origin"] = "*"
+            # Origin NOT allowed - return 200 WITHOUT CORS headers
+            response = Response(status_code=200, content="")
         
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "*"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Max-Age"] = "3600"
         return response
     
-    return await call_next(request)
+    # For all other requests, process normally
+    response = await call_next(request)
+    return response
 
 
 @app.on_event("startup")
