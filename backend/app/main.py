@@ -24,14 +24,12 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 
-# CORS middleware - validates origins explicitly for preflight OPTIONS
 @app.middleware("http")
 async def cors_middleware(request: Request, call_next):
-    # Only handle CORS for OPTIONS preflight requests with Origin header
-    if request.method == "OPTIONS" and "origin" in request.headers:
-        origin = request.headers.get("origin", "")
-        allowed = origin in settings.CORS_ORIGINS
-        
+    origin = request.headers.get("origin", "")
+    allowed = origin in settings.CORS_ORIGINS
+    
+    if request.method == "OPTIONS" and origin:
         if allowed:
             response = Response(
                 status_code=200,
@@ -45,13 +43,17 @@ async def cors_middleware(request: Request, call_next):
                 }
             )
         else:
-            # Origin NOT allowed - return 200 WITHOUT CORS headers
             response = Response(status_code=200, content="")
         
         return response
     
-    # For all other requests, process normally
     response = await call_next(request)
+    
+    if allowed and origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Expose-Headers"] = "*"
+    
     return response
 
 
