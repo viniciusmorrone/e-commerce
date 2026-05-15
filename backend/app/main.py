@@ -25,6 +25,14 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 
+@app.middleware("http")
+async def log_requests(request, call_next):
+    origin = request.headers.get("origin", "NO-ORIGIN")
+    logger.info(f"Request: {request.method} {request.url.path} - Origin: {origin}")
+    response = await call_next(request)
+    logger.info(f"Response: {response.status_code} - Headers: {dict(response.headers)}")
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
