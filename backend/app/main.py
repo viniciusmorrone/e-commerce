@@ -28,10 +28,13 @@ logger.info(f"CORS_ORIGINS loaded: {settings.CORS_ORIGINS}")
 @app.middleware("http")
 async def log_requests(request, call_next):
     origin = request.headers.get("origin", "NO-ORIGIN")
+    logging.warning(f"Origin recebida: {origin}")
     logger.info(f"Request: {request.method} {request.url.path} - Origin: {origin}")
     response = await call_next(request)
     logger.info(f"Response: {response.status_code} - Headers: {dict(response.headers)}")
     return response
+
+logging.warning(f"CORS_ORIGINS configurado: {settings.CORS_ORIGINS}")
 
 app.add_middleware(
     CORSMiddleware,
