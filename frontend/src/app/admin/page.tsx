@@ -230,6 +230,12 @@ export default function AdminPage() {
       setForm(FORM_VAZIO)
       setTimeout(() => { fecharDrawer(); setOkMsg('') }, 1600)
     } catch (e) {
+      if (axios.isAxiosError(e) && e.response?.status === 401) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        router.replace('/login')
+        return
+      }
       setErroForm(axios.isAxiosError(e) ? (e.response?.data?.detail ?? 'Erro ao criar produto.') : 'Erro inesperado.')
     } finally {
       setEnviando(false)
