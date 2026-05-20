@@ -4,6 +4,8 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
+_ZERO = Decimal('0')
+
 
 class VarianteBase(BaseModel):
     tamanho: Optional[str] = None
@@ -54,7 +56,7 @@ class ProdutoBase(BaseModel):
     nome: str
     slug: str
     descricao: Optional[str] = None
-    preco: Decimal = Field(ge=0)
+    preco: Decimal = Field(default=_ZERO, ge=0)
     categoria_id: uuid.UUID
     ativo: bool = True
 
