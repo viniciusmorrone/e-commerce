@@ -17,6 +17,7 @@ export default function ProdutoPage() {
   const [produto, setProduto] = useState<Produto | null>(null)
   const [loading, setLoading] = useState(true)
   const [imagemAtiva, setImagemAtiva] = useState(0)
+
   const [varianteSelecionada, setVarianteSelecionada] = useState<Variante | null>(null)
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null)
   const [loadingWpp, setLoadingWpp] = useState(false)
@@ -35,6 +36,13 @@ export default function ProdutoPage() {
     }
     loadData()
   }, [slug, router])
+
+  useEffect(() => {
+    if (!produto?.imagens) return
+    const sorted = [...produto.imagens].sort((a, b) => a.ordem - b.ordem)
+    const principalIdx = sorted.findIndex((img) => img.principal)
+    setImagemAtiva(principalIdx >= 0 ? principalIdx : 0)
+  }, [produto])
 
   useEffect(() => {
     if (!produto) return
@@ -65,7 +73,8 @@ export default function ProdutoPage() {
   if (!produto) return null
 
   const imagens = produto.imagens?.sort((a, b) => a.ordem - b.ordem) ?? []
-  const imagemPrincipal = imagens[imagemAtiva]?.url ?? null
+  const clampedIndex = Math.min(imagemAtiva, Math.max(0, imagens.length - 1))
+  const imagemPrincipal = imagens[clampedIndex]?.url ?? null
 
   const tamanhos = [...new Set(produto.variantes.map((v) => v.tamanho))].filter((t): t is string => t != null)
   const cores = [...new Set(produto.variantes.map((v) => v.cor))].filter((c): c is string => c != null)
@@ -101,7 +110,7 @@ export default function ProdutoPage() {
                     key={img.id}
                     onClick={() => setImagemAtiva(i)}
                     className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                      imagemAtiva === i ? "border-white" : "border-white/10 hover:border-white/30"
+                      clampedIndex === i ? "border-white" : "border-white/10 hover:border-white/30"
                     }`}
                   >
                     <Image src={img.url} alt="" fill className="object-cover" />

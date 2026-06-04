@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
 from typing import List, Optional
 from app.db.database import get_db
 from app.db.redis_client import get_redis
@@ -16,6 +15,54 @@ import uuid
 import json
 
 router = APIRouter()
+
+
+def _reescrever_imagens_produto(
+    db: Session,
+    produto_id: uuid.UUID,
+    imagem_principal: Optional[str],
+    imagens_secundarias: List[str],
+):
+    db.query(Imagem).filter(Imagem.produto_id == produto_id).delete(synchronize_session=False)
+
+    novas_imagens = []
+    proxima_ordem = 0
+
+    if imagem_principal:
+        novas_imagens.append(Imagem(
+            produto_id=produto_id,
+            url=imagem_principal,
+            ordem=0,
+            principal=True,
+        ))
+        proxima_ordem = 1
+
+    for index, url in enumerate(imagens_secundarias, start=proxima_ordem):
+        novas_imagens.append(Imagem(
+            produto_id=produto_id,
+            url=url,
+            ordem=index,
+            principal=False,
+        ))
+
+    if novas_imagens:
+        db.add_all(novas_imagens)
+
+
+def _normalizar_imagens_para_persistencia(
+    imagem_principal: Optional[str],
+    imagens_secundarias: List[str],
+):
+    imagens_secundarias_normalizadas = []
+    urls_vistas = set()
+
+    for url in imagens_secundarias:
+        if not url or url == imagem_principal or url in urls_vistas:
+            continue
+        imagens_secundarias_normalizadas.append(url)
+        urls_vistas.add(url)
+
+    return imagem_principal, imagens_secundarias_normalizadas[:3]
 
 
 @router.get("", response_model=List[ProdutoListResponse])
@@ -60,23 +107,16 @@ def listar_produtos(
     
     result = []
     for produto in produtos:
-        imagem_principal = db.query(Imagem).filter(
-            Imagem.produto_id == produto.id,
-            Imagem.principal == True
-        ).first()
-        
-        if not imagem_principal:
-            imagem_principal = db.query(Imagem).filter(
-                Imagem.produto_id == produto.id
-            ).order_by(Imagem.ordem).first()
-        
         result.append(ProdutoListResponse(
             id=produto.id,
             nome=produto.nome,
             slug=produto.slug,
+            descricao=produto.descricao,
             preco=produto.preco,
             ativo=produto.ativo,
-            imagem_principal=imagem_principal.url if imagem_principal else None
+            categoria_id=produto.categoria_id,
+            imagem_principal=produto.imagem_principal,
+            imagens_secundarias=produto.imagens_secundarias,
         ))
     
     try:
@@ -118,7 +158,9 @@ def criar_produto(
         )
     
     variantes_data = produto_data.variantes
-    produto_dict = produto_data.model_dump(exclude={'variantes'})
+    produto_dict = produto_data.model_dump(
+        exclude={"variantes", "imagem_principal", "imagens_secundarias"}
+    )
     
     produto = Produto(**produto_dict)
     db.add(produto)
@@ -127,6 +169,18 @@ def criar_produto(
     for variante_data in variantes_data:
         variante = Variante(**variante_data.model_dump(), produto_id=produto.id)
         db.add(variante)
+
+    imagem_principal, imagens_secundarias = _normalizar_imagens_para_persistencia(
+        produto_data.imagem_principal,
+        produto_data.imagens_secundarias,
+    )
+
+    _reescrever_imagens_produto(
+        db=db,
+        produto_id=produto.id,
+        imagem_principal=imagem_principal,
+        imagens_secundarias=imagens_secundarias,
+    )
     
     db.commit()
     db.refresh(produto)
@@ -156,10 +210,42 @@ def atualizar_produto(
             detail="Produto não encontrado"
         )
     
-    update_data = produto_data.model_dump(exclude_unset=True)
+    update_data = produto_data.model_dump(
+        exclude_unset=True,
+        exclude={"imagem_principal", "imagens_secundarias"},
+    )
     for field, value in update_data.items():
         setattr(produto, field, value)
-    
+
+    should_update_images = (
+        "imagem_principal" in produto_data.model_fields_set
+        or "imagens_secundarias" in produto_data.model_fields_set
+    )
+
+    if should_update_images:
+        imagem_principal = (
+            produto_data.imagem_principal
+            if "imagem_principal" in produto_data.model_fields_set
+            else produto.imagem_principal
+        )
+        imagens_secundarias = (
+            produto_data.imagens_secundarias
+            if "imagens_secundarias" in produto_data.model_fields_set
+            else produto.imagens_secundarias
+        )
+
+        imagem_principal, imagens_secundarias = _normalizar_imagens_para_persistencia(
+            imagem_principal,
+            imagens_secundarias,
+        )
+
+        _reescrever_imagens_produto(
+            db=db,
+            produto_id=produto.id,
+            imagem_principal=imagem_principal,
+            imagens_secundarias=imagens_secundarias,
+        )
+
     db.commit()
     db.refresh(produto)
     
