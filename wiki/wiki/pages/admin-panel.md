@@ -4,7 +4,7 @@ The `/admin` area now supports authenticated product create, edit, list, and ina
 
 ## Details
 
-- Date: 2026-06-03
+- Date: 2026-06-04
 - Frontend entry point: `frontend/src/app/admin/page.tsx`
 - Frontend API helpers: `frontend/src/lib/api.ts`
 - Backend listing route: `backend/app/api/routes/admin_produtos.py`
@@ -15,8 +15,11 @@ The `/admin` area now supports authenticated product create, edit, list, and ina
 - Edit-mode safeguard: admin list responses now include persisted `descricao` and `categoria_id`, and the frontend preloads them before submitting updates so price-only edits do not overwrite saved values.
 - Product image scope: `frontend/src/app/admin/page.tsx` now supports one `imagem_principal` URL plus up to three `imagens_secundarias` URLs during create/edit, and edit mode prefills those values from `GET /api/v1/admin/produtos`.
 - UX redesign status: `frontend/src/app/admin/page.tsx` now presents a dashboard-style admin view with summary stat cards, a more structured product form, improved feedback states, and more scannable product cards/actions while keeping the same CRUD contract.
+- Deploy recovery status: the admin page no longer re-declares `Categoria`, now relies on the shared API type from `frontend/src/lib/api.ts`, and has had a stale drawer-based duplicate product-creation flow removed so the active inline form/list implementation is the only source of truth.
+- Auth helper status: `frontend/src/app/admin/page.tsx` now defines a local `token()` reader for the active admin flow's login gate.
 - Verification evidence recorded in-session:
-  - `npm run build` passed in `frontend/`
+  - `npx tsc --noEmit -p tsconfig.json` passed in `frontend/`
+  - `npm run build` passed in `frontend/` on Next.js `14.2.35`
   - `python3 -m compileall app` passed in `backend/`
   - API QA exercised login + create + update + delete against `http://127.0.0.1:8000/api/v1`
   - Browser QA exercised `/login` → `/admin` create/edit/inactivate flow on `http://localhost:3000`
