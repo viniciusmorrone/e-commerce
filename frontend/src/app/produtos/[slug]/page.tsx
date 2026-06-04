@@ -129,9 +129,6 @@ export default function ProdutoPage() {
               >
                 {produto.nome}
               </h1>
-              <p className="text-3xl font-bold text-white">
-                R$ {produto.preco.toFixed(2).replace(".", ",")}
-              </p>
             </div>
 
             {produto.descricao && (

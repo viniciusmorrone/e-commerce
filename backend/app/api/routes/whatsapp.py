@@ -35,8 +35,7 @@ def gerar_link_whatsapp(
     
     mensagem_partes = [
         f"Olá! Tenho interesse no produto:",
-        f"📦 *{produto.nome}*",
-        f"💰 Preço: R$ {produto.preco:.2f}".replace('.', ',')
+        f"📦 *{produto.nome}*"
     ]
     
     if variante_id:
@@ -55,10 +54,8 @@ def gerar_link_whatsapp(
             if detalhes:
                 mensagem_partes.append(f"🎨 {' | '.join(detalhes)}")
             
-            if variante.qtd_estoque > 0:
-                mensagem_partes.append(f"✅ Disponível em estoque")
-            else:
-                mensagem_partes.append(f"⚠️ Consultar disponibilidade")
+            if variante.qtd_estoque == 0:
+                mensagem_partes.append(f"⚠️ Gostaria de consultar disponibilidade")
     
     mensagem_partes.append(f"\n🔗 Link: https://jehfashion.com/produtos/{slug}")
     
