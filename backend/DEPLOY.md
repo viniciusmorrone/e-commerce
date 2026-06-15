@@ -1,10 +1,11 @@
-# 🚀 Deploy no Render
+# 🚀 Deploy (API no Render + Banco no Supabase)
 
 ## Pré-requisitos
 
-1. Conta no [Render](https://render.com)
-2. Conta no [Cloudinary](https://cloudinary.com) (para imagens)
-3. Repositório Git (GitHub, GitLab ou Bitbucket)
+1. Conta no [Render](https://render.com) (para a API)
+2. Conta no [Supabase](https://supabase.com) (para o banco PostgreSQL)
+3. Conta no [Cloudinary](https://cloudinary.com) (para imagens)
+4. Repositório Git (GitHub, GitLab ou Bitbucket)
 
 ## Passo a Passo
 
@@ -17,31 +18,23 @@
    - API Key
    - API Secret
 
-### 2. Criar Banco de Dados PostgreSQL
+### 2. Criar Banco de Dados no Supabase
 
-1. No Render Dashboard, clique em **New +**
-2. Selecione **PostgreSQL**
-3. Configure:
-   - **Name**: `jehfashion-db`
-   - **Database**: `jehfashion`
-   - **User**: `jehfashion`
-   - **Region**: Oregon (ou mais próximo)
-   - **Plan**: Free
-4. Clique em **Create Database**
-5. Copie a **Internal Database URL**
+1. Acesse https://supabase.com e clique em **New Project**
+2. Configure:
+   - **Name**: `jehfashion`
+   - **Database Password**: defina uma senha forte (anote!)
+   - **Region**: a mais próxima dos seus usuários
+3. Aguarde a criação do projeto
+4. Vá em **Project Settings → Database → Connection string → URI**
+5. Copie a URI. Recomenda-se a opção **Connection pooling** (porta `6543`). Formato:
+   ```
+   postgresql://postgres.<project-ref>:<SUA-SENHA>@aws-0-<regiao>.pooler.supabase.com:6543/postgres
+   ```
 
-### 3. Criar Redis
+> **Redis**: não é necessário. O cache é opcional e a aplicação funciona sem ele (Supabase não oferece Redis). Para habilitar cache, use um serviço externo como Upstash e preencha `REDIS_URL`.
 
-1. No Render Dashboard, clique em **New +**
-2. Selecione **Redis**
-3. Configure:
-   - **Name**: `jehfashion-redis`
-   - **Region**: Oregon
-   - **Plan**: Free
-4. Clique em **Create Redis**
-5. Copie a **Internal Redis URL**
-
-### 4. Deploy da API
+### 3. Deploy da API
 
 1. No Render Dashboard, clique em **New +**
 2. Selecione **Web Service**
@@ -55,13 +48,12 @@
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-### 5. Configurar Variáveis de Ambiente
+### 4. Configurar Variáveis de Ambiente
 
 Na seção **Environment**, adicione:
 
 ```
-DATABASE_URL=<Internal Database URL do PostgreSQL>
-REDIS_URL=<Internal Redis URL>
+DATABASE_URL=<URI de conexão do Supabase>
 SECRET_KEY=<gerar chave aleatória segura>
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -82,13 +74,13 @@ import secrets
 print(secrets.token_urlsafe(32))
 ```
 
-### 6. Deploy
+### 5. Deploy
 
 1. Clique em **Create Web Service**
 2. Aguarde o build e deploy (5-10 minutos)
 3. Acesse a URL fornecida: `https://jehfashion-api.onrender.com`
 
-### 7. Executar Migrations
+### 6. Executar Migrations
 
 Após o primeiro deploy:
 
@@ -101,7 +93,7 @@ python scripts/create_admin.py
 python scripts/seed_categories.py
 ```
 
-### 8. Testar API
+### 7. Testar API
 
 Acesse: `https://jehfashion-api.onrender.com/api/v1/docs`
 
@@ -146,17 +138,17 @@ python scripts/seed_categories.py
 
 ## Custos
 
-- **PostgreSQL Free**: 256MB RAM, 1GB storage
-- **Redis Free**: 25MB
-- **Web Service Free**: 512MB RAM, suspende após 15min inatividade
+- **Supabase Free**: 500MB de banco, projeto pausado após inatividade prolongada
+- **Render Web Service Free**: 512MB RAM, suspende após 15min inatividade
 
 Para produção, considere planos pagos para melhor performance.
 
 ## Troubleshooting
 
 **Erro de conexão com banco:**
-- Verifique se a DATABASE_URL está correta
-- Certifique-se de usar a Internal URL
+- Verifique se a `DATABASE_URL` (URI do Supabase) está correta, incluindo a senha
+- Em caso de erro de SSL, adicione `?sslmode=require` ao final da URI
+- Confirme que está usando a porta correta do pooler (`6543`) ou conexão direta (`5432`)
 
 **Erro ao fazer upload de imagens:**
 - Verifique credenciais do Cloudinary

@@ -10,8 +10,6 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
-      - key: REDIS_URL
-        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM
@@ -36,14 +34,3 @@ services:
         value: '["https://jehfashion.com", "https://www.jehfashion.com", "https://loja-jeh.vercel.app", "https://loja-2n31p101u-vinicius-morrones.projects.vercel.app", "https://loja-cfd03mmos-vinicius-morrones-projects.vercel.app"]'
       - key: PYTHON_VERSION
         value: 3.11.0
-
-databases:
-  - name: jehfashion-db
-    databaseName: jehfashion
-    user: jehfashion
-    plan: free
-    region: oregon
-
-  - name: jehfashion-redis
-    plan: free
-    region: oregon

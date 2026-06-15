@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/jehfashion"
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = ""
     
     SECRET_KEY: str = "change-this-secret-key-in-production"
     ALGORITHM: str = "HS256"

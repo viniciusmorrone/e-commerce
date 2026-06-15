@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.db.database import SessionLocal
 from app.models.categoria import Categoria
+from app.models.produto import Produto, Variante, Imagem
 from slugify import slugify
 
 
