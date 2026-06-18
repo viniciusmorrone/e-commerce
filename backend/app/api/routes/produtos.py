@@ -11,10 +11,26 @@ from app.schemas.produto import (
     ProdutoListResponse
 )
 from app.models.produto import Produto, Variante, Imagem
+from app.models.categoria import Categoria
 import uuid
 import json
 
 router = APIRouter()
+
+
+def _coletar_ids_categoria(db: Session, categoria_id: uuid.UUID) -> List[uuid.UUID]:
+    ids: List[uuid.UUID] = [categoria_id]
+    fila = [categoria_id]
+
+    while fila:
+        atual = fila.pop()
+        filhos = db.query(Categoria.id).filter(Categoria.pai_id == atual).all()
+        for (filho_id,) in filhos:
+            if filho_id not in ids:
+                ids.append(filho_id)
+                fila.append(filho_id)
+
+    return ids
 
 
 def _reescrever_imagens_produto(
@@ -89,7 +105,8 @@ def listar_produtos(
     query = db.query(Produto).filter(Produto.ativo == True)
     
     if categoria_id:
-        query = query.filter(Produto.categoria_id == categoria_id)
+        ids_categoria = _coletar_ids_categoria(db, categoria_id)
+        query = query.filter(Produto.categoria_id.in_(ids_categoria))
     
     if cor or tamanho:
         query = query.join(Variante)

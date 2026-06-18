@@ -90,6 +90,87 @@ function normalizeSecondaryImages(images?: string[]) {
   return Array.from({ length: 3 }, (_, index) => images?.[index] ?? '')
 }
 
+function ImageUploadField({
+  label,
+  value,
+  uploading,
+  compact = false,
+  onSelect,
+  onRemove,
+}: {
+  label?: string
+  value: string
+  uploading: boolean
+  compact?: boolean
+  onSelect: (file: File) => void
+  onRemove: () => void
+}) {
+  const boxSize = compact ? "aspect-square" : "aspect-[4/3]"
+
+  return (
+    <div>
+      {label && (
+        <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">{label}</span>
+      )}
+      {value ? (
+        <div className={cn("relative w-full rounded-lg overflow-hidden border border-white/10 bg-black/40", boxSize)}>
+          <img src={value} alt={label ?? 'Imagem do produto'} className="w-full h-full object-cover" />
+          <button
+            type="button"
+            onClick={onRemove}
+            className="absolute top-2 right-2 bg-black/70 hover:bg-[#C8102E] text-white rounded-full p-1.5 transition-colors"
+            aria-label="Remover imagem"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <label
+          className={cn(
+            "flex flex-col items-center justify-center gap-2 w-full rounded-lg border border-dashed border-white/15 bg-black/40 cursor-pointer hover:border-white/30 hover:bg-black/60 transition-colors text-center px-2",
+            boxSize,
+            uploading && "pointer-events-none opacity-60"
+          )}
+        >
+          {uploading ? (
+            <>
+              <svg className="animate-spin w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span className="text-white/40 text-[10px] uppercase tracking-wider">Enviando...</span>
+            </>
+          ) : (
+            <>
+              <svg className={cn("text-white/25", compact ? "w-5 h-5" : "w-7 h-7")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-white/40 text-[10px] uppercase tracking-wider leading-tight">
+                {compact ? 'Adicionar' : 'Clique para enviar'}
+              </span>
+              {!compact && (
+                <span className="text-white/20 text-[9px] uppercase tracking-wider">PNG, JPG ou WEBP</span>
+              )}
+            </>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={event => {
+              const file = event.target.files?.[0]
+              if (file) onSelect(file)
+              event.target.value = ''
+            }}
+          />
+        </label>
+      )}
+    </div>
+  )
+}
+
 function token() {
   if (typeof window === 'undefined') {
     return null
@@ -109,6 +190,7 @@ export default function AdminPage() {
   const [feedback, setFeedback] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<ProdutoFormState>(initialFormState)
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null)
 
   const categoriasDisponiveis = useMemo(() => {
     const flat: Categoria[] = []
@@ -168,6 +250,38 @@ export default function AdminPage() {
     const nextImages = normalizeSecondaryImages(form.imagens_secundarias)
     nextImages[index] = value
     handleFieldChange('imagens_secundarias', nextImages)
+  }
+
+  async function handleImageUpload(slot: 'principal' | number, file: File) {
+    const key = slot === 'principal' ? 'principal' : `sec-${slot}`
+    setUploadingImage(key)
+    setErro('')
+    setFeedback('')
+
+    try {
+      const { url } = await adminProdutosApi.uploadImagem(file)
+      if (slot === 'principal') {
+        handleFieldChange('imagem_principal', url)
+      } else {
+        handleSecondaryImageChange(slot, url)
+      }
+    } catch (e) {
+      if (axios.isAxiosError(e) && e.response?.status === 401) {
+        logout()
+        return
+      }
+      setErro('Não foi possível enviar a imagem. Tente novamente.')
+    } finally {
+      setUploadingImage(null)
+    }
+  }
+
+  function handleImageRemove(slot: 'principal' | number) {
+    if (slot === 'principal') {
+      handleFieldChange('imagem_principal', '')
+    } else {
+      handleSecondaryImageChange(slot, '')
+    }
   }
 
   function handleFieldChange<K extends keyof ProdutoFormState>(field: K, value: ProdutoFormState[K]) {
@@ -488,50 +602,33 @@ export default function AdminPage() {
 
                 <div>
                   <SectionLabel>Imagens</SectionLabel>
-                  <div className="space-y-3">
-                    <label className="block">
-                      <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">Imagem principal (capa)</span>
-                      <input
-                        type="url"
-                        value={form.imagem_principal}
-                        onChange={event => handleFieldChange('imagem_principal', event.target.value)}
-                        placeholder="https://exemplo.com/imagem-principal.jpg"
-                        className="w-full bg-black/40 border border-white/10 rounded-lg text-white px-4 py-2.5 text-sm outline-none focus:border-white/25 transition-colors placeholder:text-white/20"
-                      />
-                    </label>
+                  <p className="text-white/30 text-[11px] mb-4 -mt-1">
+                    Envie arquivos de imagem (PNG, JPG ou WEBP) direto do seu dispositivo.
+                  </p>
+                  <div className="space-y-4">
+                    <ImageUploadField
+                      label="Imagem principal (capa)"
+                      value={form.imagem_principal}
+                      uploading={uploadingImage === 'principal'}
+                      onSelect={file => handleImageUpload('principal', file)}
+                      onRemove={() => handleImageRemove('principal')}
+                    />
 
-                    <label className="block">
-                      <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">Imagem secundária 1</span>
-                      <input
-                        type="url"
-                        value={form.imagens_secundarias[0]}
-                        onChange={event => handleSecondaryImageChange(0, event.target.value)}
-                        placeholder="https://exemplo.com/imagem-secundaria-1.jpg"
-                        className="w-full bg-black/40 border border-white/10 rounded-lg text-white px-4 py-2.5 text-sm outline-none focus:border-white/25 transition-colors placeholder:text-white/20"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">Imagem secundária 2</span>
-                      <input
-                        type="url"
-                        value={form.imagens_secundarias[1]}
-                        onChange={event => handleSecondaryImageChange(1, event.target.value)}
-                        placeholder="https://exemplo.com/imagem-secundaria-2.jpg"
-                        className="w-full bg-black/40 border border-white/10 rounded-lg text-white px-4 py-2.5 text-sm outline-none focus:border-white/25 transition-colors placeholder:text-white/20"
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">Imagem secundária 3</span>
-                      <input
-                        type="url"
-                        value={form.imagens_secundarias[2]}
-                        onChange={event => handleSecondaryImageChange(2, event.target.value)}
-                        placeholder="https://exemplo.com/imagem-secundaria-3.jpg"
-                        className="w-full bg-black/40 border border-white/10 rounded-lg text-white px-4 py-2.5 text-sm outline-none focus:border-white/25 transition-colors placeholder:text-white/20"
-                      />
-                    </label>
+                    <div>
+                      <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">Imagens secundárias</span>
+                      <div className="grid grid-cols-3 gap-3">
+                        {[0, 1, 2].map(index => (
+                          <ImageUploadField
+                            key={index}
+                            compact
+                            value={form.imagens_secundarias[index] ?? ''}
+                            uploading={uploadingImage === `sec-${index}`}
+                            onSelect={file => handleImageUpload(index, file)}
+                            onRemove={() => handleImageRemove(index)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -12,6 +12,28 @@ import uuid
 router = APIRouter()
 
 
+@router.post("/upload", status_code=status.HTTP_201_CREATED)
+async def upload_imagem_avulsa(
+    file: UploadFile = File(...),
+    _: object = Depends(get_current_admin),
+):
+    if not file.content_type or not file.content_type.startswith('image/'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Arquivo deve ser uma imagem"
+        )
+
+    try:
+        contents = await file.read()
+        url = upload_image(contents)
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao fazer upload da imagem: {str(e)}"
+        )
+
+
 @router.post("/{produto_id}/imagens", response_model=ImagemResponse, status_code=status.HTTP_201_CREATED)
 async def upload_imagem_produto(
     produto_id: uuid.UUID,
