@@ -72,7 +72,7 @@ export function FeaturedProducts() {
                   {produto.nome}
                 </h3>
                 <p className="text-white text-sm font-bold">
-                  R$ {produto.preco.toFixed(2).replace(".", ",")}
+                  R$ {Number(produto.preco).toFixed(2).replace(".", ",")}
                 </p>
               </Link>
             ))}

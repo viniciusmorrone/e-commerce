@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer, model_validator
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
@@ -59,6 +59,10 @@ class ProdutoBase(BaseModel):
     preco: Decimal = Field(default=_ZERO, ge=0)
     categoria_id: uuid.UUID
     ativo: bool = True
+
+    @field_serializer("preco")
+    def serialize_preco(self, value: Decimal) -> Optional[float]:
+        return float(value) if value is not None else None
 
 
 class ProdutoImagemInput(BaseModel):
@@ -150,6 +154,10 @@ class ProdutoListResponse(ProdutoImagemOutput):
     preco: Decimal
     ativo: bool
     categoria_id: uuid.UUID
-    
+
+    @field_serializer("preco")
+    def serialize_preco(self, value: Decimal) -> Optional[float]:
+        return float(value) if value is not None else None
+
     class Config:
         from_attributes = True

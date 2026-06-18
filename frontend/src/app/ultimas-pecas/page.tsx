@@ -79,7 +79,7 @@ export default function UltimasPecasPage() {
                 <h3 className="text-white text-[11px] font-semibold uppercase tracking-wide mb-1 group-hover:text-white/60 transition-colors line-clamp-2" style={{ fontFamily: MONTSERRAT }}>
                   {produto.nome}
                 </h3>
-                <p className="text-white text-sm font-bold">R$ {produto.preco.toFixed(2).replace(".", ",")}</p>
+                <p className="text-white text-sm font-bold">R$ {Number(produto.preco).toFixed(2).replace(".", ",")}</p>
               </Link>
             ))}
           </div>
