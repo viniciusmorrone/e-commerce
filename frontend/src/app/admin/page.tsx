@@ -96,6 +96,7 @@ function ImageUploadField({
   uploading,
   compact = false,
   onSelect,
+  onUrlChange,
   onRemove,
 }: {
   label?: string
@@ -103,9 +104,19 @@ function ImageUploadField({
   uploading: boolean
   compact?: boolean
   onSelect: (file: File) => void
+  onUrlChange: (url: string) => void
   onRemove: () => void
 }) {
   const boxSize = compact ? "aspect-square" : "aspect-[4/3]"
+  const [urlDraft, setUrlDraft] = useState('')
+
+  function commitUrl() {
+    const trimmed = urlDraft.trim()
+    if (trimmed) {
+      onUrlChange(trimmed)
+      setUrlDraft('')
+    }
+  }
 
   return (
     <div>
@@ -127,6 +138,7 @@ function ImageUploadField({
           </button>
         </div>
       ) : (
+        <div className="space-y-2">
         <label
           className={cn(
             "flex flex-col items-center justify-center gap-2 w-full rounded-lg border border-dashed border-white/15 bg-black/40 cursor-pointer hover:border-white/30 hover:bg-black/60 transition-colors text-center px-2",
@@ -166,6 +178,30 @@ function ImageUploadField({
             }}
           />
         </label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={urlDraft}
+            onChange={event => setUrlDraft(event.target.value)}
+            onKeyDown={event => {
+              if (event.key === 'Enter') {
+                event.preventDefault()
+                commitUrl()
+              }
+            }}
+            placeholder="ou cole uma URL de imagem"
+            className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg text-white px-3 py-2 text-xs outline-none focus:border-white/25 transition-colors placeholder:text-white/20"
+          />
+          <button
+            type="button"
+            onClick={commitUrl}
+            disabled={!urlDraft.trim()}
+            className="shrink-0 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Usar
+          </button>
+        </div>
+        </div>
       )}
     </div>
   )
@@ -270,9 +306,23 @@ export default function AdminPage() {
         logout()
         return
       }
-      setErro('Não foi possível enviar a imagem. Tente novamente.')
+      const detail =
+        axios.isAxiosError(e) && typeof e.response?.data?.detail === 'string'
+          ? e.response.data.detail
+          : null
+      setErro(detail || 'Não foi possível enviar a imagem. Tente novamente.')
     } finally {
       setUploadingImage(null)
+    }
+  }
+
+  function handleImageUrlChange(slot: 'principal' | number, url: string) {
+    setErro('')
+    setFeedback('')
+    if (slot === 'principal') {
+      handleFieldChange('imagem_principal', url)
+    } else {
+      handleSecondaryImageChange(slot, url)
     }
   }
 
@@ -603,7 +653,7 @@ export default function AdminPage() {
                 <div>
                   <SectionLabel>Imagens</SectionLabel>
                   <p className="text-white/30 text-[11px] mb-4 -mt-1">
-                    Envie arquivos de imagem (PNG, JPG ou WEBP) direto do seu dispositivo.
+                    Envie arquivos de imagem (PNG, JPG ou WEBP) do seu dispositivo ou cole a URL de uma imagem já hospedada.
                   </p>
                   <div className="space-y-4">
                     <ImageUploadField
@@ -611,6 +661,7 @@ export default function AdminPage() {
                       value={form.imagem_principal}
                       uploading={uploadingImage === 'principal'}
                       onSelect={file => handleImageUpload('principal', file)}
+                      onUrlChange={url => handleImageUrlChange('principal', url)}
                       onRemove={() => handleImageRemove('principal')}
                     />
 
@@ -624,6 +675,7 @@ export default function AdminPage() {
                             value={form.imagens_secundarias[index] ?? ''}
                             uploading={uploadingImage === `sec-${index}`}
                             onSelect={file => handleImageUpload(index, file)}
+                            onUrlChange={url => handleImageUrlChange(index, url)}
                             onRemove={() => handleImageRemove(index)}
                           />
                         ))}

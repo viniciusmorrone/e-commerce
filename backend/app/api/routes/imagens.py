@@ -8,8 +8,22 @@ from app.models.produto import Produto, Imagem
 from app.services.cloudinary_service import upload_image, delete_image
 from app.api.deps import get_current_admin
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _upload_error_detail(error: Exception) -> str:
+    message = str(error)
+    lowered = message.lower()
+    if "api key" in lowered or "api_key" in lowered or "signature" in lowered or "unauthorized" in lowered:
+        return (
+            "Falha na autenticação com o Cloudinary. "
+            "Verifique CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET."
+        )
+    return f"Erro ao fazer upload da imagem: {message}"
 
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
@@ -28,9 +42,10 @@ async def upload_imagem_avulsa(
         url = upload_image(contents)
         return {"url": url}
     except Exception as e:
+        logger.exception("Falha no upload de imagem avulsa")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da imagem: {str(e)}"
+            detail=_upload_error_detail(e)
         )
 
 
@@ -83,9 +98,10 @@ async def upload_imagem_produto(
         return imagem
         
     except Exception as e:
+        logger.exception("Falha no upload de imagem do produto")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da imagem: {str(e)}"
+            detail=_upload_error_detail(e)
         )
 
 
