@@ -96,7 +96,7 @@ export default function ProdutoPage() {
           <div className="space-y-3">
             <div className="aspect-square relative overflow-hidden rounded-2xl bg-neutral-900">
               {imagemPrincipal ? (
-                <Image src={imagemPrincipal} alt={produto.nome} fill className="object-cover" />
+                <Image src={imagemPrincipal} alt={produto.nome} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">
                   Sem imagem
@@ -113,7 +113,7 @@ export default function ProdutoPage() {
                       clampedIndex === i ? "border-white" : "border-white/10 hover:border-white/30"
                     }`}
                   >
-                    <Image src={img.url} alt="" fill className="object-cover" />
+                    <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
                   </button>
                 ))}
               </div>

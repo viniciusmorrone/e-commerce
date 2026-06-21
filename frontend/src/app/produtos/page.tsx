@@ -123,6 +123,7 @@ function ProdutosContent() {
                       src={produto.imagem_principal}
                       alt={produto.nome}
                       fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
