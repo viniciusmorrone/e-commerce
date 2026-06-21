@@ -21,6 +21,11 @@ export default function ProdutoPage() {
   const [varianteSelecionada, setVarianteSelecionada] = useState<Variante | null>(null)
   const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null)
   const [loadingWpp, setLoadingWpp] = useState(false)
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set())
+
+  function markBroken(url: string) {
+    setBrokenImages(prev => new Set(prev).add(url))
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -95,8 +100,8 @@ export default function ProdutoPage() {
           {/* Imagens */}
           <div className="space-y-3">
             <div className="aspect-square relative overflow-hidden rounded-2xl bg-neutral-900">
-              {imagemPrincipal ? (
-                <Image src={imagemPrincipal} alt={produto.nome} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+              {imagemPrincipal && !brokenImages.has(imagemPrincipal) ? (
+                <Image src={imagemPrincipal} alt={produto.nome} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" onError={() => markBroken(imagemPrincipal)} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white/20 text-sm">
                   Sem imagem
@@ -113,7 +118,11 @@ export default function ProdutoPage() {
                       clampedIndex === i ? "border-white" : "border-white/10 hover:border-white/30"
                     }`}
                   >
-                    <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
+                    {!brokenImages.has(img.url) ? (
+                      <Image src={img.url} alt="" fill sizes="64px" className="object-cover" onError={() => markBroken(img.url)} />
+                    ) : (
+                      <div className="w-full h-full bg-neutral-800" />
+                    )}
                   </button>
                 ))}
               </div>

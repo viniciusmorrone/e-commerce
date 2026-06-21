@@ -8,6 +8,29 @@ import { cn } from '@/lib/utils'
 
 const FONT = "'Montserrat', sans-serif"
 const TAMANHOS = ['P', 'M', 'G', 'GG']
+
+function sanitizeCloudinaryUrl(raw: string): { url: string; converted: boolean } {
+  const trimmed = raw.trim()
+  if (!trimmed.includes('res-console.cloudinary.com')) {
+    return { url: trimmed, converted: false }
+  }
+  try {
+    const withPublicHost = trimmed.replace('res-console.cloudinary.com', 'res.cloudinary.com')
+    const withoutThumbnails = withPublicHost.replace('/thumbnails/v1', '')
+    const match = withoutThumbnails.match(
+      /^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?)([A-Za-z0-9+/_=-]+)$/
+    )
+    if (!match) return { url: trimmed, converted: false }
+    const [, prefix, encoded] = match
+    const standard = encoded.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = standard + '=='.slice(0, (4 - (standard.length % 4)) % 4)
+    const publicId = atob(padded)
+    return { url: `${prefix}${publicId}`, converted: true }
+  } catch {
+    return { url: trimmed, converted: false }
+  }
+}
+
 const SLUGS_SEM_TAMANHO = new Set(['chinelos', 'bones', 'acessorios', 'relogios'])
 
 function precisaTamanho(slug: string): boolean {
@@ -109,13 +132,14 @@ function ImageUploadField({
 }) {
   const boxSize = compact ? "aspect-square" : "aspect-[4/3]"
   const [urlDraft, setUrlDraft] = useState('')
+  const [convertedWarning, setConvertedWarning] = useState(false)
 
   function commitUrl() {
-    const trimmed = urlDraft.trim()
-    if (trimmed) {
-      onUrlChange(trimmed)
-      setUrlDraft('')
-    }
+    if (!urlDraft.trim()) return
+    const { url, converted } = sanitizeCloudinaryUrl(urlDraft)
+    onUrlChange(url)
+    setUrlDraft('')
+    if (converted) setConvertedWarning(true)
   }
 
   return (
@@ -123,9 +147,34 @@ function ImageUploadField({
       {label && (
         <span className="block text-white/50 text-[11px] uppercase tracking-wider mb-2">{label}</span>
       )}
+      {convertedWarning && (
+        <div className="flex items-start gap-2 text-amber-400 text-[10px] bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-2 mb-2">
+          <svg className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>URL do painel do Cloudinary convertida automaticamente para URL de entrega pública.</span>
+          <button type="button" onClick={() => setConvertedWarning(false)} className="ml-auto flex-shrink-0 text-amber-400/60 hover:text-amber-300">✕</button>
+        </div>
+      )}
       {value ? (
         <div className={cn("relative w-full rounded-lg overflow-hidden border border-white/10 bg-black/40", boxSize)}>
-          <img src={value} alt={label ?? 'Imagem do produto'} className="w-full h-full object-cover" />
+          <img
+            src={value}
+            alt={label ?? 'Imagem do produto'}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const img = e.currentTarget
+              img.style.display = 'none'
+              const placeholder = img.nextElementSibling as HTMLElement | null
+              if (placeholder) placeholder.style.display = 'flex'
+            }}
+          />
+          <div style={{ display: 'none' }} className="w-full h-full items-center justify-center flex-col gap-1">
+            <svg className="w-6 h-6 text-red-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-red-400/50 text-[9px] uppercase tracking-wider">URL inválida</span>
+          </div>
           <button
             type="button"
             onClick={onRemove}
@@ -789,14 +838,21 @@ export default function AdminPage() {
                             src={produto.imagem_principal}
                             alt={produto.nome}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              target.nextElementSibling?.removeAttribute('hidden')
+                            }}
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                          </div>
-                        )}
+                        ) : null}
+                        <div
+                          hidden={!!produto.imagem_principal}
+                          className="w-full h-full flex items-center justify-center"
+                        >
+                          <svg className="w-6 h-6 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                        </div>
                       </div>
 
                       <div className="flex-1 min-w-0">

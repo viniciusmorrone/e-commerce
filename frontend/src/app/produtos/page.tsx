@@ -8,6 +8,36 @@ import { produtosApi, categoriasApi, type ProdutoListItem } from "@/lib/api"
 
 const MONTSERRAT = "'Montserrat', sans-serif"
 
+function ProductCard({ produto }: { produto: ProdutoListItem }) {
+  const [imgError, setImgError] = useState(false)
+  return (
+    <Link href={`/produtos/${produto.slug}`} className="group">
+      <div className="aspect-square relative overflow-hidden rounded-xl bg-neutral-900 mb-3">
+        {produto.imagem_principal && !imgError ? (
+          <Image
+            src={produto.imagem_principal}
+            alt={produto.nome}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">
+            Sem imagem
+          </div>
+        )}
+      </div>
+      <h3
+        className="text-white text-[11px] font-semibold uppercase tracking-wide mb-1 group-hover:text-white/60 transition-colors line-clamp-2"
+        style={{ fontFamily: MONTSERRAT }}
+      >
+        {produto.nome}
+      </h3>
+    </Link>
+  )
+}
+
 const CATEGORIA_LABELS: Record<string, string> = {
   camisetas: "CAMISETAS",
   calcas: "CALÇAS",
@@ -116,29 +146,7 @@ function ProdutosContent() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
             {produtos.map((produto) => (
-              <Link key={produto.id} href={`/produtos/${produto.slug}`} className="group">
-                <div className="aspect-square relative overflow-hidden rounded-xl bg-neutral-900 mb-3">
-                  {produto.imagem_principal ? (
-                    <Image
-                      src={produto.imagem_principal}
-                      alt={produto.nome}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">
-                      Sem imagem
-                    </div>
-                  )}
-                </div>
-                <h3
-                  className="text-white text-[11px] font-semibold uppercase tracking-wide mb-1 group-hover:text-white/60 transition-colors line-clamp-2"
-                  style={{ fontFamily: MONTSERRAT }}
-                >
-                  {produto.nome}
-                </h3>
-              </Link>
+              <ProductCard key={produto.id} produto={produto} />
             ))}
           </div>
         )}
