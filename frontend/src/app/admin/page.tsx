@@ -31,7 +31,7 @@ function sanitizeCloudinaryUrl(raw: string): { url: string; converted: boolean }
   }
 }
 
-const SLUGS_SEM_TAMANHO = new Set(['chinelos', 'bones', 'acessorios', 'relogios'])
+const SLUGS_SEM_TAMANHO = new Set(['chinelos', 'acessorios', 'relogios', 'carteiras', 'bones', 'marcas'])
 
 function precisaTamanho(slug: string): boolean {
   return !SLUGS_SEM_TAMANHO.has(slug)

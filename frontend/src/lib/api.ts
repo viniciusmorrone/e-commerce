@@ -96,6 +96,7 @@ export interface ProdutoFormPayload {
 export const produtosApi = {
   listar: async (params?: {
     categoria_id?: string;
+    busca?: string;
     cor?: string;
     tamanho?: string;
     ordenar?: string;

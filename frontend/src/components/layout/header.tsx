@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Search, X, ChevronDown, Menu } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
@@ -25,7 +26,6 @@ const navItems = [
       { label: "POLO", href: "/produtos?categoria=polo" },
       { label: "GRIFFE", href: "/produtos?categoria=griffe" },
       { label: "TIME", href: "/produtos?categoria=time" },
-      { label: "DE ARTISTA", href: "/produtos?categoria=de-artista" },
       { label: "TODAS AS CAMISETAS", href: "/produtos?categoria=camisetas" },
     ],
   },
@@ -49,23 +49,32 @@ const navItems = [
     hasDropdown: false,
   },
   {
-    label: "BONÉS",
-    slug: "bones",
-    href: "/produtos?categoria=bones",
-    hasDropdown: false,
-  },
-  {
     label: "ACESSÓRIOS",
     slug: "acessorios",
     href: "/produtos?categoria=acessorios",
     hasDropdown: true,
     items: [
       { label: "RELÓGIOS", href: "/produtos?categoria=relogios" },
+      { label: "CARTEIRAS", href: "/produtos?categoria=carteiras" },
+      { label: "BONÉS", href: "/produtos?categoria=bones" },
     ],
+  },
+  {
+    label: "BLUSAS",
+    slug: "blusas",
+    href: "/produtos?categoria=blusas",
+    hasDropdown: false,
+  },
+  {
+    label: "TÊNIS",
+    slug: "tenis",
+    href: "/produtos?categoria=tenis",
+    hasDropdown: false,
   },
 ]
 
 export function Header() {
+  const router = useRouter()
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
@@ -110,7 +119,14 @@ export function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { setSearchOpen(false); setSearchQuery("") }
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    router.push(`/produtos?busca=${encodeURIComponent(searchQuery.trim())}`)
+                    setSearchOpen(false)
+                    setSearchQuery("")
+                  }
+                }}
                 className="w-36 bg-transparent border border-white rounded-md px-2 py-1 text-white text-xs focus:outline-none placeholder:text-white/30"
                 autoFocus
               />

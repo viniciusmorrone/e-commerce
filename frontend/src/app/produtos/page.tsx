@@ -44,25 +44,30 @@ const CATEGORIA_LABELS: Record<string, string> = {
   chinelos: "CHINELOS",
   bones: "BONÉS",
   acessorios: "ACESSÓRIOS",
-  marcas: "MARCAS DE ARTISTA",
+  marcas: "MARCAS DE ARTISTA!",
   polo: "POLO",
   griffe: "GRIFFE",
   time: "TIME",
-  "de-artista": "DE ARTISTA",
   jeans: "JEANS",
   alfaiataria: "ALFAIATARIA",
   skinny: "SKINNY",
   reta: "RETA",
   relogios: "RELÓGIOS",
+  carteiras: "CARTEIRAS",
+  tenis: "TÊNIS",
+  blusas: "BLUSAS",
 }
 
 function ProdutosContent() {
   const searchParams = useSearchParams()
   const categoriaSlug = searchParams.get("categoria") ?? undefined
+  const buscaQuery = searchParams.get("busca") ?? undefined
   const [produtos, setProdutos] = useState<ProdutoListItem[]>([])
   const [loading, setLoading] = useState(true)
 
-  const titulo = categoriaSlug
+  const titulo = buscaQuery
+    ? `RESULTADOS PARA "${buscaQuery.toUpperCase()}"`
+    : categoriaSlug
     ? (CATEGORIA_LABELS[categoriaSlug] ?? categoriaSlug.toUpperCase())
     : "TODOS OS PRODUTOS"
 
@@ -72,7 +77,7 @@ function ProdutosContent() {
       try {
         let categoriaId: string | undefined
 
-        if (categoriaSlug) {
+        if (categoriaSlug && !buscaQuery) {
           const categorias = await categoriasApi.listar()
           for (const cat of categorias) {
             if (cat.slug === categoriaSlug) { categoriaId = cat.id; break }
@@ -83,6 +88,7 @@ function ProdutosContent() {
 
         const data = await produtosApi.listar({
           categoria_id: categoriaId,
+          busca: buscaQuery,
           ordenar: "criado_em",
           ordem: "desc",
         })
@@ -94,7 +100,7 @@ function ProdutosContent() {
       }
     }
     loadData()
-  }, [categoriaSlug])
+  }, [categoriaSlug, buscaQuery])
 
   return (
     <div className="min-h-screen bg-black text-white">

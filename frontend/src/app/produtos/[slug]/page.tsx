@@ -145,9 +145,6 @@ export default function ProdutoPage() {
                 <span className="text-base align-top text-white/50 mr-1">R$</span>
                 {Number(produto.preco).toFixed(2).replace(".", ",")}
               </p>
-              <p className="text-[11px] text-white/30 mt-2 uppercase tracking-widest" style={{ fontFamily: MONTSERRAT }}>
-                Em até 12x no cartão
-              </p>
             </div>
 
             {produto.descricao && (

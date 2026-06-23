@@ -84,6 +84,7 @@ def _normalizar_imagens_para_persistencia(
 @router.get("", response_model=List[ProdutoListResponse])
 def listar_produtos(
     categoria_id: Optional[uuid.UUID] = None,
+    busca: Optional[str] = None,
     cor: Optional[str] = None,
     tamanho: Optional[str] = None,
     ordenar: Optional[str] = Query("criado_em", regex="^(preco|nome|criado_em)$"),
@@ -93,7 +94,7 @@ def listar_produtos(
     db: Session = Depends(get_db),
     redis = Depends(get_redis)
 ):
-    cache_key = f"produtos:{categoria_id}:{cor}:{tamanho}:{ordenar}:{ordem}:{limite}:{offset}"
+    cache_key = f"produtos:{categoria_id}:{busca}:{cor}:{tamanho}:{ordenar}:{ordem}:{limite}:{offset}"
     
     try:
         cached = redis.get(cache_key)
@@ -103,6 +104,9 @@ def listar_produtos(
         pass
     
     query = db.query(Produto).filter(Produto.ativo == True)
+
+    if busca:
+        query = query.filter(Produto.nome.ilike(f"%{busca}%"))
     
     if categoria_id:
         ids_categoria = _coletar_ids_categoria(db, categoria_id)
